@@ -121,12 +121,12 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		}
 		int directionId = gTrip.direction_id;
 		String stationName = cleanTripHeadsign(gTrip.trip_headsign);
-		if (route.id == 500l) {
+		if (route.id == 509l) {
 			if (directionId == 0) {
-				mTrip.setHeadsignDirection(MDirectionType.WEST);
+				mTrip.setHeadsignDirection(MDirectionType.EAST);
 				return;
 			} else if (directionId == 1) {
-				mTrip.setHeadsignDirection(MDirectionType.EAST);
+				mTrip.setHeadsignDirection(MDirectionType.WEST);
 				return;
 			}
 		}
