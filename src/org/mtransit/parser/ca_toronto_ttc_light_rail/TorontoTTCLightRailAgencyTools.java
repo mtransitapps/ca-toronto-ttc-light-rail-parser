@@ -9,6 +9,7 @@ import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
+import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MDirectionType;
@@ -104,7 +105,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	private static final String NORTH = "north";
 
 	@Override
-	public void setTripHeadsign(MRoute route, MTrip mTrip, GTrip gTrip) {
+	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
 		String gTripHeadsignLC = gTrip.trip_headsign.toLowerCase(Locale.ENGLISH);
 		if (gTripHeadsignLC.startsWith(EAST)) {
 			mTrip.setHeadsignDirection(MDirectionType.EAST);
@@ -119,18 +120,15 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 			mTrip.setHeadsignDirection(MDirectionType.SOUTH);
 			return;
 		}
-		int directionId = gTrip.direction_id;
-		String stationName = cleanTripHeadsign(gTrip.trip_headsign);
-		if (route.id == 509l) {
-			if (directionId == 0) {
+		if (mRoute.id == 509l) {
+			if (gTrip.direction_id == 0) {
 				mTrip.setHeadsignDirection(MDirectionType.EAST);
 				return;
-			} else if (directionId == 1) {
+			} else if (gTrip.direction_id == 1) {
 				mTrip.setHeadsignDirection(MDirectionType.WEST);
 				return;
 			}
 		}
-		mTrip.setHeadsignString(stationName, directionId);
 		System.out.println("Unexpected trip " + gTrip);
 		System.exit(-1);
 	}
