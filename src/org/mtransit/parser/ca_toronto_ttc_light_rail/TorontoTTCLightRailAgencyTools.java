@@ -73,12 +73,12 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public long getRouteId(GRoute gRoute) {
-		return Long.parseLong(gRoute.route_short_name); // using route short name as route ID
+		return Long.parseLong(gRoute.getRouteShortName()); // using route short name as route ID
 	}
 
 	@Override
 	public String getRouteLongName(GRoute gRoute) {
-		return CleanUtils.cleanLabel(gRoute.route_long_name.toLowerCase(Locale.ENGLISH));
+		return CleanUtils.cleanLabel(gRoute.getRouteLongName().toLowerCase(Locale.ENGLISH));
 	}
 
 	private static final String AGENCY_COLOR = "B80000"; // RED (AGENCY WEB SITE CSS)
@@ -92,7 +92,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String getRouteColor(GRoute gRoute) {
-		int rsn = Integer.parseInt(gRoute.route_short_name);
+		int rsn = Integer.parseInt(gRoute.getRouteShortName());
 		if (rsn >= 300 && rsn <= 399) { // Night Network
 			return COLOR_00529F;
 		}
@@ -106,7 +106,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
-		String gTripHeadsignLC = gTrip.trip_headsign.toLowerCase(Locale.ENGLISH);
+		String gTripHeadsignLC = gTrip.getTripHeadsign().toLowerCase(Locale.ENGLISH);
 		if (gTripHeadsignLC.startsWith(EAST)) {
 			mTrip.setHeadsignDirection(MDirectionType.EAST);
 			return;
@@ -121,10 +121,10 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 			return;
 		}
 		if (mRoute.id == 509l) {
-			if (gTrip.direction_id == 0) {
+			if (gTrip.getDirectionId() == 0) {
 				mTrip.setHeadsignDirection(MDirectionType.EAST);
 				return;
-			} else if (gTrip.direction_id == 1) {
+			} else if (gTrip.getDirectionId() == 1) {
 				mTrip.setHeadsignDirection(MDirectionType.WEST);
 				return;
 			}
