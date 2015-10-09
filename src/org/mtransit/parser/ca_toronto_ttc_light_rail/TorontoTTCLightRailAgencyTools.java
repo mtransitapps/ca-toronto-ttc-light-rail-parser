@@ -125,7 +125,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 			mTrip.setHeadsignDirection(MDirectionType.SOUTH);
 			return;
 		}
-		if (mRoute.id == 504l) {
+		if (mRoute.getId() == 504l) {
 			if (gTrip.getDirectionId() == 0) {
 				mTrip.setHeadsignDirection(MDirectionType.EAST);
 				return;
@@ -134,7 +134,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 				return;
 			}
 		}
-		if (mRoute.id == 505l) {
+		if (mRoute.getId() == 505l) {
 			if (gTrip.getDirectionId() == 0) {
 				mTrip.setHeadsignDirection(MDirectionType.EAST);
 				return;
@@ -143,7 +143,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 				return;
 			}
 		}
-		if (mRoute.id == 509l) {
+		if (mRoute.getId() == 509l) {
 			if (gTrip.getDirectionId() == 0) {
 				mTrip.setHeadsignDirection(MDirectionType.EAST);
 				return;
@@ -152,7 +152,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 				return;
 			}
 		}
-		System.out.printf("%s: Unexpected trip %s!", mRoute.id, gTrip);
+		System.out.printf("%s: Unexpected trip %s!", mRoute.getId(), gTrip);
 		System.exit(-1);
 	}
 
