@@ -191,6 +191,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		gStopName = WEST_.matcher(gStopName).replaceAll(WEST_REPLACEMENT);
 		gStopName = NORTH_.matcher(gStopName).replaceAll(NORTH_REPLACEMENT);
 		gStopName = SOUTH_.matcher(gStopName).replaceAll(SOUTH_REPLACEMENT);
+		gStopName = CleanUtils.removePoints(gStopName);
 		gStopName = CleanUtils.cleanStreetTypes(gStopName);
 		gStopName = CleanUtils.cleanNumbers(gStopName);
 		return CleanUtils.cleanLabel(gStopName);
