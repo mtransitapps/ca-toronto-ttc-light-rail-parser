@@ -59,6 +59,11 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
+	public boolean excludeRoute(GRoute gRoute) {
+		return super.excludeRoute(gRoute);
+	}
+
+	@Override
 	public boolean excludeTrip(GTrip gTrip) {
 		if (this.serviceIds != null) {
 			return excludeUselessTrip(gTrip, this.serviceIds);
@@ -126,34 +131,47 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 			mTrip.setHeadsignDirection(MDirectionType.SOUTH);
 			return;
 		}
-		if (mRoute.getId() == 504l) {
-			if (gTrip.getDirectionId() == 0) {
-				mTrip.setHeadsignDirection(MDirectionType.EAST);
-				return;
-			} else if (gTrip.getDirectionId() == 1) {
-				mTrip.setHeadsignDirection(MDirectionType.WEST);
-				return;
+		if (isGoodEnoughAccepted()) {
+			if (mRoute.getId() == 504l) {
+				if (gTrip.getDirectionId() == 0) {
+					mTrip.setHeadsignDirection(MDirectionType.EAST);
+					return;
+				} else if (gTrip.getDirectionId() == 1) {
+					mTrip.setHeadsignDirection(MDirectionType.WEST);
+					return;
+				}
 			}
-		}
-		if (mRoute.getId() == 505l) {
-			if (gTrip.getDirectionId() == 0) {
-				mTrip.setHeadsignDirection(MDirectionType.EAST);
-				return;
-			} else if (gTrip.getDirectionId() == 1) {
-				mTrip.setHeadsignDirection(MDirectionType.WEST);
-				return;
+			if (mRoute.getId() == 505l) {
+				if (gTrip.getDirectionId() == 0) {
+					mTrip.setHeadsignDirection(MDirectionType.EAST);
+					return;
+				} else if (gTrip.getDirectionId() == 1) {
+					mTrip.setHeadsignDirection(MDirectionType.WEST);
+					return;
+				}
 			}
-		}
-		if (mRoute.getId() == 509l) {
-			if (gTrip.getDirectionId() == 0) {
-				mTrip.setHeadsignDirection(MDirectionType.EAST);
-				return;
-			} else if (gTrip.getDirectionId() == 1) {
-				mTrip.setHeadsignDirection(MDirectionType.WEST);
-				return;
+			if (mRoute.getId() == 506l) {
+				if (gTrip.getDirectionId() == 0) {
+					mTrip.setHeadsignDirection(MDirectionType.EAST);
+					return;
+				} else if (gTrip.getDirectionId() == 1) {
+					mTrip.setHeadsignDirection(MDirectionType.WEST);
+					return;
+				}
 			}
+			if (mRoute.getId() == 509l) {
+				if (gTrip.getDirectionId() == 0) {
+					mTrip.setHeadsignDirection(MDirectionType.EAST);
+					return;
+				} else if (gTrip.getDirectionId() == 1) {
+					mTrip.setHeadsignDirection(MDirectionType.WEST);
+					return;
+				}
+			}
+			mTrip.setHeadsignString(cleanTripHeadsign(gTripHeadsignLC), gTrip.getDirectionId());
+			return;
 		}
-		System.out.printf("%s: Unexpected trip %s!", mRoute.getId(), gTrip);
+		System.out.printf("\n%s: Unexpected trip %s!\n", mRoute.getId(), gTrip);
 		System.exit(-1);
 	}
 
