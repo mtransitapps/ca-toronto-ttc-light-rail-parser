@@ -1,21 +1,31 @@
 package org.mtransit.parser.ca_toronto_ttc_light_rail;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.Pair;
+import org.mtransit.parser.SplitUtils;
 import org.mtransit.parser.Utils;
+import org.mtransit.parser.SplitUtils.RouteTripSpec;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.gtfs.data.GSpec;
+import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
+import org.mtransit.parser.gtfs.data.GTripStop;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MDirectionType;
 import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
+import org.mtransit.parser.mt.data.MTripStop;
 
 // http://www1.toronto.ca/wps/portal/contentonly?vgnextoid=96f236899e02b210VgnVCM1000003dd60f89RCRD
 // http://opendata.toronto.ca/TTC/routes/OpenData_TTC_Schedules.zip
@@ -110,6 +120,58 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return null; // use agency color instead of provided colors (like web site)
 	}
 
+	private static HashMap<Long, RouteTripSpec> ALL_ROUTE_TRIPS2;
+	static {
+		HashMap<Long, RouteTripSpec> map2 = new HashMap<Long, RouteTripSpec>();
+		map2.put(506L, new RouteTripSpec(506L, //
+				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.EAST.getId(), // MAIN STREET STATION
+				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.WEST.getId()) // HIGH PARK LOOP
+				.addTripSort(MDirectionType.EAST.intValue(), //
+						Arrays.asList(new String[] { //
+						"5292", // "1252", // HIGH PARK LOOP
+								"8999", // "1149", // HOWARD PARK AVE AT DUNDAS ST WEST
+								"7506", // "991", // DUNDAS ST WEST AT STERLING RD
+								"3797", // "1085", // GERRARD ST EAST AT COXWELL AVE
+								"8980", // "1800", // COXWELL AVE AT UPPER GERRARD ST EAST
+								"14260", // "14741", // MAIN STREET STATION
+						})) //
+				.addTripSort(MDirectionType.WEST.intValue(), //
+						Arrays.asList(new String[] { //
+						"14260", // "14741", // MAIN STREET STATION
+								"10283", // "1794", // COXWELL AVE AT LOWER GERRARD ST EAST
+								"2048", // "1079", // GERRARD ST EAST AT ASHDALE AVE
+								"8135", // "836", // COLLEGE ST AT LANSDOWNE AVE
+								"9132", // "1155", // HOWARD PARK AVE AT RONCESVALLES AVE
+								"5292", // "1252", // HIGH PARK LOOP
+						})) //
+				.compileBothTripSort());
+		ALL_ROUTE_TRIPS2 = map2;
+	}
+
+	@Override
+	public int compareEarly(long routeId, List<MTripStop> list1, List<MTripStop> list2, MTripStop ts1, MTripStop ts2, GStop ts1GStop, GStop ts2GStop) {
+		if (ALL_ROUTE_TRIPS2.containsKey(routeId)) {
+			return ALL_ROUTE_TRIPS2.get(routeId).compare(routeId, list1, list2, ts1, ts2, ts1GStop, ts2GStop);
+		}
+		return super.compareEarly(routeId, list1, list2, ts1, ts2, ts1GStop, ts2GStop);
+	}
+
+	@Override
+	public ArrayList<MTrip> splitTrip(MRoute mRoute, GTrip gTrip, GSpec gtfs) {
+		if (ALL_ROUTE_TRIPS2.containsKey(mRoute.getId())) {
+			return ALL_ROUTE_TRIPS2.get(mRoute.getId()).getAllTrips();
+		}
+		return super.splitTrip(mRoute, gTrip, gtfs);
+	}
+
+	@Override
+	public Pair<Long[], Integer[]> splitTripStop(MRoute mRoute, GTrip gTrip, GTripStop gTripStop, ArrayList<MTrip> splitTrips, GSpec routeGTFS) {
+		if (ALL_ROUTE_TRIPS2.containsKey(mRoute.getId())) {
+			return SplitUtils.splitTripStop(mRoute, gTrip, gTripStop, routeGTFS, ALL_ROUTE_TRIPS2.get(mRoute.getId()));
+		}
+		return super.splitTripStop(mRoute, gTrip, gTripStop, splitTrips, routeGTFS);
+	}
+
 	private static final String WEST = "west";
 	private static final String EAST = "east";
 	private static final String SOUTH = "south";
@@ -117,6 +179,9 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
+		if (ALL_ROUTE_TRIPS2.containsKey(mRoute.getId())) {
+			return; // split
+		}
 		String gTripHeadsignLC = gTrip.getTripHeadsign().toLowerCase(Locale.ENGLISH);
 		if (gTripHeadsignLC.startsWith(EAST)) {
 			mTrip.setHeadsignDirection(MDirectionType.EAST);
@@ -129,46 +194,6 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 			return;
 		} else if (gTripHeadsignLC.startsWith(SOUTH)) {
 			mTrip.setHeadsignDirection(MDirectionType.SOUTH);
-			return;
-		}
-		if (isGoodEnoughAccepted()) {
-			if (mRoute.getId() == 504l) {
-				if (gTrip.getDirectionId() == 0) {
-					mTrip.setHeadsignDirection(MDirectionType.EAST);
-					return;
-				} else if (gTrip.getDirectionId() == 1) {
-					mTrip.setHeadsignDirection(MDirectionType.WEST);
-					return;
-				}
-			}
-			if (mRoute.getId() == 505l) {
-				if (gTrip.getDirectionId() == 0) {
-					mTrip.setHeadsignDirection(MDirectionType.EAST);
-					return;
-				} else if (gTrip.getDirectionId() == 1) {
-					mTrip.setHeadsignDirection(MDirectionType.WEST);
-					return;
-				}
-			}
-			if (mRoute.getId() == 506l) {
-				if (gTrip.getDirectionId() == 0) {
-					mTrip.setHeadsignDirection(MDirectionType.EAST);
-					return;
-				} else if (gTrip.getDirectionId() == 1) {
-					mTrip.setHeadsignDirection(MDirectionType.WEST);
-					return;
-				}
-			}
-			if (mRoute.getId() == 509l) {
-				if (gTrip.getDirectionId() == 0) {
-					mTrip.setHeadsignDirection(MDirectionType.EAST);
-					return;
-				} else if (gTrip.getDirectionId() == 1) {
-					mTrip.setHeadsignDirection(MDirectionType.WEST);
-					return;
-				}
-			}
-			mTrip.setHeadsignString(cleanTripHeadsign(gTripHeadsignLC), gTrip.getDirectionId());
 			return;
 		}
 		System.out.printf("\n%s: Unexpected trip %s!\n", mRoute.getId(), gTrip);
