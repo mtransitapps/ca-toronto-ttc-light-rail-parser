@@ -133,8 +133,12 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.WEST.getId()) // HIGH PARK LOOP
 				.addTripSort(MDirectionType.EAST.intValue(), //
 						Arrays.asList(new String[] { //
-						"5292", // "1252", // HIGH PARK LOOP
-								"8999", // "1149", // HOWARD PARK AVE AT DUNDAS ST WEST
+						"5292", // "1252", // HIGH PARK LOOP <=
+								"8763", // "1154", // HOWARD PARK AVE AT RONCESVALLES AVE
+								"8999", // "1149", // != HOWARD PARK AVE AT DUNDAS ST WEST
+								"9132", // "1155", // != HOWARD PARK AVE AT RONCESVALLES AVE <=
+								"2954", // "2167", // != DUNDAS ST WEST AT HOWARD PARK AVE
+								"2243", // "987", // == DUNDAS ST WEST AT SORAUREN AVE
 								"7506", // "991", // DUNDAS ST WEST AT STERLING RD
 								"3797", // "1085", // GERRARD ST EAST AT COXWELL AVE
 								"8980", // "1800", // COXWELL AVE AT UPPER GERRARD ST EAST
@@ -148,6 +152,33 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 								"8135", // "836", // COLLEGE ST AT LANSDOWNE AVE
 								"9132", // "1155", // HOWARD PARK AVE AT RONCESVALLES AVE
 								"5292", // "1252", // HIGH PARK LOOP
+						})) //
+				.compileBothTripSort());
+		map2.put(510L, new RouteTripSpec(510L, //
+				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.NORTH.getId(), // SPADINA STATION
+				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.SOUTH.getId()) // UNION STATION
+				.addTripSort(MDirectionType.NORTH.intValue(), //
+						Arrays.asList(new String[] { //
+						"9227", // "10935", // UNION STATION <=
+								"6075", // "12085", // != SPADINA AVE AT QUEENS QUAY WEST NORTH SIDE
+								"478", // "10927", // != <> QUEENS QUAY LOOP AT LOWER SPADINA AVE <=
+								"9243", // "10777", // == SPADINA AVE AT BREMNER BLVD NORTH SIDE
+								"5275", // "7353", // == != SPADINA AVE AT KING ST WEST NORTH SIDE
+								"10089", // "12158", // != <> CHARLOTTE ST AT OXLEY ST =>
+								"8346", // "11985", // != SPADINA AVE AT RICHMOND ST WEST
+								"14339", // "14816", // SPADINA STATION =>
+						})) //
+				.addTripSort(MDirectionType.SOUTH.intValue(), //
+						Arrays.asList(new String[] { //
+						"14339", // "14816", // SPADINA STATION
+								"9203", // "8129", // == != SPADINA AVE AT QUEEN ST WEST SOUTH SIDE
+								"10089", // "12158", // != <> CHARLOTTE ST AT OXLEY ST =>
+								"10138", // "8126", // != SPADINA AVE AT KING ST WEST
+								"6639", // "10929", // SPADINA AVE AT BREMNER BLVD
+								"2125", // "13131", // == != QUEENS QUAY WEST AT LOWER SPADINA AVE EAST SIDE
+								"478", // "10927", // != <> QUEENS QUAY LOOP AT LOWER SPADINA AVE =>
+								"15122", // "15331", // != QUEENS QUAY W AT REES ST
+								"9227", // "10935", // UNION STATION =>
 						})) //
 				.compileBothTripSort());
 		ALL_ROUTE_TRIPS2 = map2;
@@ -213,6 +244,13 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		tripHeadsign = CleanUtils.cleanStreetTypes(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanNumbers(tripHeadsign);
 		return CleanUtils.cleanLabel(tripHeadsign);
+	}
+
+	@Override
+	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
+		System.out.printf("\nUnexptected trips to merge %s & %s!\n", mTrip, mTripToMerge);
+		System.exit(-1);
+		return false;
 	}
 
 	private static final Pattern SIDE = Pattern.compile("((^|\\W){1}(side)(\\W|$){1})", Pattern.CASE_INSENSITIVE);
