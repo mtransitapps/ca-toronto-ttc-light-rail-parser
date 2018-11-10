@@ -164,6 +164,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 								"478", // != <> QUEENS QUAY LOOP AT LOWER SPADINA AVE <=
 								"9243", // == SPADINA AVE AT BREMNER BLVD NORTH SIDE
 								"5275", // == != SPADINA AVE AT KING ST WEST NORTH SIDE
+								"10089", // != <> CHARLOTTE ST AT OXLEY ST =>
 								"8346", // != SPADINA AVE AT RICHMOND ST WEST
 								"7582", // SPADINA AVE AT QUEEN ST WEST NORTH SIDE
 								"14339", // SPADINA STATION =>
