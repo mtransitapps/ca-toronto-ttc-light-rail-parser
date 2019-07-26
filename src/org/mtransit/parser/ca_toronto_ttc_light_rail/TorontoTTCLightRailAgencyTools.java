@@ -134,14 +134,17 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 				.addTripSort(MDirectionType.EAST.intValue(), //
 						Arrays.asList(new String[] { //
 						"5292", // HIGH PARK LOOP <=
+								"8673", // HOWARD PARK AVE AT PARKSIDE DR EAST SIDE {43.649054,-79.457394}
 								"8763", // HOWARD PARK AVE AT RONCESVALLES AVE
 								"8999", // != HOWARD PARK AVE AT DUNDAS ST WEST
 								"9132", // != HOWARD PARK AVE AT RONCESVALLES AVE <=
 								"2954", // != DUNDAS ST WEST AT HOWARD PARK AVE
 								"2243", // == DUNDAS ST WEST AT SORAUREN AVE
 								"7506", // DUNDAS ST WEST AT STERLING RD
-								"3797", // GERRARD ST EAST AT COXWELL AVE
-								"8980", // COXWELL AVE AT UPPER GERRARD ST EAST
+								"3368", // ==
+								"3797", // != GERRARD ST EAST AT COXWELL AVE
+								"8980", // == COXWELL AVE AT UPPER GERRARD ST EAST
+								"549", // ==
 								"14260", // MAIN STREET STATION
 						})) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
@@ -151,6 +154,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 								"2048", // GERRARD ST EAST AT ASHDALE AVE
 								"8135", // COLLEGE ST AT LANSDOWNE AVE
 								"9132", // HOWARD PARK AVE AT RONCESVALLES AVE
+								"4538", // HOWARD PARK AVE AT PARKSIDE DR
 								"5292", // HIGH PARK LOOP
 						})) //
 				.compileBothTripSort());
