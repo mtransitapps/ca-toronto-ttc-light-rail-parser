@@ -152,6 +152,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 						"14260", // MAIN STREET STATION
 								"10283", // COXWELL AVE AT LOWER GERRARD ST EAST
 								"2048", // GERRARD ST EAST AT ASHDALE AVE
+								"614", // PARLIAMENT ST AT CARLTON
 								"8135", // COLLEGE ST AT LANSDOWNE AVE
 								"9132", // HOWARD PARK AVE AT RONCESVALLES AVE
 								"4538", // HOWARD PARK AVE AT PARKSIDE DR
