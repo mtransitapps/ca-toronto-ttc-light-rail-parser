@@ -1,7 +1,6 @@
 package org.mtransit.parser.ca_toronto_ttc_light_rail;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,8 +11,8 @@ import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.Pair;
 import org.mtransit.parser.SplitUtils;
-import org.mtransit.parser.Utils;
 import org.mtransit.parser.SplitUtils.RouteTripSpec;
+import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
@@ -128,65 +127,6 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	private static HashMap<Long, RouteTripSpec> ALL_ROUTE_TRIPS2;
 	static {
 		HashMap<Long, RouteTripSpec> map2 = new HashMap<Long, RouteTripSpec>();
-		map2.put(506L, new RouteTripSpec(506L, //
-				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.EAST.getId(), // MAIN STREET STATION
-				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.WEST.getId()) // HIGH PARK LOOP
-				.addTripSort(MDirectionType.EAST.intValue(), //
-						Arrays.asList(new String[] { //
-						"5292", // HIGH PARK LOOP <=
-								"8673", // HOWARD PARK AVE AT PARKSIDE DR EAST SIDE {43.649054,-79.457394}
-								"8763", // HOWARD PARK AVE AT RONCESVALLES AVE
-								"8999", // != HOWARD PARK AVE AT DUNDAS ST WEST
-								"9132", // != HOWARD PARK AVE AT RONCESVALLES AVE <=
-								"2954", // != DUNDAS ST WEST AT HOWARD PARK AVE
-								"2243", // == DUNDAS ST WEST AT SORAUREN AVE
-								"7506", // DUNDAS ST WEST AT STERLING RD
-								"3368", // ==
-								"3797", // != GERRARD ST EAST AT COXWELL AVE
-								"8980", // == COXWELL AVE AT UPPER GERRARD ST EAST
-								"549", // ==
-								"14260", // MAIN STREET STATION
-						})) //
-				.addTripSort(MDirectionType.WEST.intValue(), //
-						Arrays.asList(new String[] { //
-						"14260", // MAIN STREET STATION
-								"10283", // COXWELL AVE AT LOWER GERRARD ST EAST
-								"2048", // GERRARD ST EAST AT ASHDALE AVE
-								"614", // PARLIAMENT ST AT CARLTON
-								"8135", // COLLEGE ST AT LANSDOWNE AVE
-								"9132", // HOWARD PARK AVE AT RONCESVALLES AVE
-								"4538", // HOWARD PARK AVE AT PARKSIDE DR
-								"5292", // HIGH PARK LOOP
-						})) //
-				.compileBothTripSort());
-		map2.put(510L, new RouteTripSpec(510L, //
-				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.NORTH.getId(), // SPADINA STATION
-				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_DIRECTION, MDirectionType.SOUTH.getId()) // UNION STATION
-				.addTripSort(MDirectionType.NORTH.intValue(), //
-						Arrays.asList(new String[] { //
-						"9227", // UNION STATION <=
-								"6075", // != SPADINA AVE AT QUEENS QUAY WEST NORTH SIDE
-								"478", // != <> QUEENS QUAY LOOP AT LOWER SPADINA AVE <=
-								"9243", // == SPADINA AVE AT BREMNER BLVD NORTH SIDE
-								"5275", // == != SPADINA AVE AT KING ST WEST NORTH SIDE
-								"10089", // != <> CHARLOTTE ST AT OXLEY ST =>
-								"8346", // != SPADINA AVE AT RICHMOND ST WEST
-								"7582", // SPADINA AVE AT QUEEN ST WEST NORTH SIDE
-								"14339", // SPADINA STATION =>
-						})) //
-				.addTripSort(MDirectionType.SOUTH.intValue(), //
-						Arrays.asList(new String[] { //
-						"14339", // SPADINA STATION
-								"9203", // == != SPADINA AVE AT QUEEN ST WEST SOUTH SIDE
-								"10089", // != <> CHARLOTTE ST AT OXLEY ST =>
-								"10138", // != SPADINA AVE AT KING ST WEST
-								"6639", // SPADINA AVE AT BREMNER BLVD
-								"2125", // == != QUEENS QUAY WEST AT LOWER SPADINA AVE EAST SIDE
-								"478", // != <> QUEENS QUAY LOOP AT LOWER SPADINA AVE =>
-								"15122", // != QUEENS QUAY W AT REES ST
-								"9227", // UNION STATION =>
-						})) //
-				.compileBothTripSort());
 		ALL_ROUTE_TRIPS2 = map2;
 	}
 
