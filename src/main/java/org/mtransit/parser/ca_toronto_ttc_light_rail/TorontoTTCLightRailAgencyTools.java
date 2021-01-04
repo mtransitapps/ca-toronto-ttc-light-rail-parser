@@ -3,9 +3,9 @@ package org.mtransit.parser.ca_toronto_ttc_light_rail;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.parser.CleanUtils;
-import org.mtransit.parser.Constants;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
+import org.mtransit.parser.StringUtils;
 import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
@@ -19,6 +19,8 @@ import org.mtransit.parser.mt.data.MTrip;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import static org.mtransit.parser.Constants.EMPTY;
 
 // https://open.toronto.ca/dataset/ttc-routes-and-schedules/
 // OLD: http://opendata.toronto.ca/TTC/routes/OpenData_TTC_Schedules.zip
@@ -35,42 +37,43 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		new TorontoTTCLightRailAgencyTools().start(args);
 	}
 
-	private HashSet<String> serviceIds;
+	@Nullable
+	private HashSet<Integer> serviceIdInts;
 
 	@Override
 	public void start(@NotNull String[] args) {
 		MTLog.log("Generating TTC light rail data...");
 		long start = System.currentTimeMillis();
-		this.serviceIds = extractUsefulServiceIds(args, this);
+		this.serviceIdInts = extractUsefulServiceIdInts(args, this, true);
 		super.start(args);
 		MTLog.log("Generating TTC light rail data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
 	@Override
 	public boolean excludingAll() {
-		return this.serviceIds != null && this.serviceIds.isEmpty();
+		return this.serviceIdInts != null && this.serviceIdInts.isEmpty();
 	}
 
 	@Override
 	public boolean excludeCalendar(@NotNull GCalendar gCalendar) {
-		if (this.serviceIds != null) {
-			return excludeUselessCalendar(gCalendar, this.serviceIds);
+		if (this.serviceIdInts != null) {
+			return excludeUselessCalendarInt(gCalendar, this.serviceIdInts);
 		}
 		return super.excludeCalendar(gCalendar);
 	}
 
 	@Override
 	public boolean excludeCalendarDate(@NotNull GCalendarDate gCalendarDates) {
-		if (this.serviceIds != null) {
-			return excludeUselessCalendarDate(gCalendarDates, this.serviceIds);
+		if (this.serviceIdInts != null) {
+			return excludeUselessCalendarDateInt(gCalendarDates, this.serviceIdInts);
 		}
 		return super.excludeCalendarDate(gCalendarDates);
 	}
 
 	@Override
 	public boolean excludeTrip(@NotNull GTrip gTrip) {
-		if (this.serviceIds != null) {
-			return excludeUselessTrip(gTrip, this.serviceIds);
+		if (this.serviceIdInts != null) {
+			return excludeUselessTripInt(gTrip, this.serviceIdInts);
 		}
 		return super.excludeTrip(gTrip);
 	}
@@ -92,7 +95,8 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return cleanRouteLongName(gRoute);
 	}
 
-	private String cleanRouteLongName(GRoute gRoute) {
+	@NotNull
+	private String cleanRouteLongName(@NotNull GRoute gRoute) {
 		String routeLongName = gRoute.getRouteLongNameOrDefault();
 		routeLongName = routeLongName.toLowerCase(Locale.ENGLISH);
 		return CleanUtils.cleanLabel(routeLongName);
@@ -133,10 +137,10 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
-		tripHeadsign = STARTS_WITH_TOWARDS_.matcher(tripHeadsign).replaceAll(Constants.EMPTY);
+		tripHeadsign = STARTS_WITH_TOWARDS_.matcher(tripHeadsign).replaceAll(EMPTY); // keep trip direction name
 		tripHeadsign = CleanUtils.removeVia(tripHeadsign);
 		tripHeadsign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, tripHeadsign);
-		tripHeadsign = STATION_.matcher(tripHeadsign).replaceAll(Constants.EMPTY);
+		tripHeadsign = STATION_.matcher(tripHeadsign).replaceAll(EMPTY);
 		tripHeadsign = CleanUtils.fixMcXCase(tripHeadsign);
 		tripHeadsign = CleanUtils.CLEAN_AT.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AT_REPLACEMENT);
 		tripHeadsign = CleanUtils.CLEAN_AND.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AND_REPLACEMENT);
@@ -149,10 +153,28 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	@NotNull
 	@Override
-	public String cleanDirectionHeadsign(@NotNull String directionHeadSign) {
-		directionHeadSign = STARTS_WITH_DASH_.matcher(directionHeadSign).replaceAll(Constants.EMPTY);
+	public String cleanDirectionHeadsign(boolean fromStopName, @NotNull String directionHeadSign) {
+		directionHeadSign = STARTS_WITH_DASH_.matcher(directionHeadSign).replaceAll(EMPTY); // keep East/West/North/South
 		directionHeadSign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, directionHeadSign);
 		return CleanUtils.cleanLabel(directionHeadSign);
+	}
+
+	private static final String L_ = "L ";
+
+	@Nullable
+	@Override
+	public String selectDirectionHeadSign(@Nullable String headSign1, @Nullable String headSign2) {
+		if (StringUtils.equals(headSign1, headSign2)) {
+			return null; // can NOT select
+		}
+		if (headSign1 != null && headSign1.startsWith(L_)) {
+			if (headSign2 == null || !headSign2.startsWith(L_)) {
+				return headSign2;
+			}
+		} else if (headSign2 != null && headSign2.startsWith(L_)) {
+			return headSign1;
+		}
+		return null;
 	}
 
 	@Override
@@ -185,7 +207,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String cleanStopName(@NotNull String gStopName) {
-		gStopName = ENDS_WITH_TOWARDS_.matcher(gStopName).replaceAll(Constants.EMPTY);
+		gStopName = ENDS_WITH_TOWARDS_.matcher(gStopName).replaceAll(EMPTY);
 		gStopName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, gStopName);
 		gStopName = CleanUtils.CLEAN_AT.matcher(gStopName).replaceAll(CleanUtils.CLEAN_AT_REPLACEMENT);
 		gStopName = SIDE.matcher(gStopName).replaceAll(SIDE_REPLACEMENT);
