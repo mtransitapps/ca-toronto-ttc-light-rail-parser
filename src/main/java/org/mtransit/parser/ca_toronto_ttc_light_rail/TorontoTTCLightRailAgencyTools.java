@@ -130,33 +130,14 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		);
 	}
 
-	private static final Pattern STARTS_WITH_TOWARDS_ = Pattern.compile("((^|^.* )towards )", Pattern.CASE_INSENSITIVE);
-
-	private static final Pattern STATION_ = Pattern.compile("(^|\\s)(station)($|\\s)", Pattern.CASE_INSENSITIVE);
-
-	@NotNull
 	@Override
-	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
-		tripHeadsign = STARTS_WITH_TOWARDS_.matcher(tripHeadsign).replaceAll(EMPTY); // keep trip direction name
-		tripHeadsign = CleanUtils.removeVia(tripHeadsign);
-		tripHeadsign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, tripHeadsign);
-		tripHeadsign = STATION_.matcher(tripHeadsign).replaceAll(EMPTY);
-		tripHeadsign = CleanUtils.fixMcXCase(tripHeadsign);
-		tripHeadsign = CleanUtils.CLEAN_AT.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AT_REPLACEMENT);
-		tripHeadsign = CleanUtils.CLEAN_AND.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AND_REPLACEMENT);
-		tripHeadsign = CleanUtils.cleanStreetTypes(tripHeadsign);
-		tripHeadsign = CleanUtils.cleanNumbers(tripHeadsign);
-		return CleanUtils.cleanLabel(tripHeadsign);
+	public int getDirectionType() {
+		return MTrip.HEADSIGN_TYPE_DIRECTION;
 	}
 
-	private static final Pattern STARTS_WITH_DASH_ = Pattern.compile("( - .*$)", Pattern.CASE_INSENSITIVE);
-
-	@NotNull
 	@Override
-	public String cleanDirectionHeadsign(boolean fromStopName, @NotNull String directionHeadSign) {
-		directionHeadSign = STARTS_WITH_DASH_.matcher(directionHeadSign).replaceAll(EMPTY); // keep East/West/North/South
-		directionHeadSign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, directionHeadSign);
-		return CleanUtils.cleanLabel(directionHeadSign);
+	public boolean directionFinderEnabled() {
+		return true;
 	}
 
 	private static final String L_ = "L ";
@@ -177,9 +158,37 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return null;
 	}
 
+	private static final Pattern STARTS_WITH_DASH_ = Pattern.compile("( - .*$)", Pattern.CASE_INSENSITIVE);
+
+	@NotNull
 	@Override
-	public boolean directionFinderEnabled() {
-		return true;
+	public String cleanDirectionHeadsign(boolean fromStopName, @NotNull String directionHeadSign) {
+		directionHeadSign = STARTS_WITH_DASH_.matcher(directionHeadSign).replaceAll(EMPTY); // keep East/West/North/South
+		directionHeadSign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, directionHeadSign);
+		return CleanUtils.cleanLabel(directionHeadSign);
+	}
+
+	private static final Pattern STARTS_WITH_TOWARDS_ = Pattern.compile("((^|^.* )towards )", Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern STATION_ = Pattern.compile("(^|\\s)(station)($|\\s)", Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern MC_CAUL_ = CleanUtils.cleanWords("mccaul");
+	private static final String MC_CAUL_REPLACEMENT = CleanUtils.cleanWordsReplacement("McCaul");
+
+	@NotNull
+	@Override
+	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
+		tripHeadsign = STARTS_WITH_TOWARDS_.matcher(tripHeadsign).replaceAll(EMPTY); // keep trip direction name
+		tripHeadsign = CleanUtils.removeVia(tripHeadsign);
+		tripHeadsign = MC_CAUL_.matcher(tripHeadsign).replaceAll(MC_CAUL_REPLACEMENT); // fix McCAUL
+		tripHeadsign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, tripHeadsign);
+		tripHeadsign = STATION_.matcher(tripHeadsign).replaceAll(EMPTY);
+		tripHeadsign = CleanUtils.fixMcXCase(tripHeadsign);
+		tripHeadsign = CleanUtils.CLEAN_AT.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AT_REPLACEMENT);
+		tripHeadsign = CleanUtils.CLEAN_AND.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AND_REPLACEMENT);
+		tripHeadsign = CleanUtils.cleanStreetTypes(tripHeadsign);
+		tripHeadsign = CleanUtils.cleanNumbers(tripHeadsign);
+		return CleanUtils.cleanLabel(tripHeadsign);
 	}
 
 	@Override
