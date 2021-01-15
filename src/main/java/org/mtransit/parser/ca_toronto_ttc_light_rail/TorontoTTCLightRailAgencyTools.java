@@ -168,7 +168,12 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabel(directionHeadSign);
 	}
 
-	private static final Pattern STARTS_WITH_TOWARDS_ = Pattern.compile("((^|^.* )towards )", Pattern.CASE_INSENSITIVE);
+	private static final Pattern KEEP_LETTER_AND_TOWARDS_ = Pattern.compile("(^([a-z]+) - ([\\d]+)([a-z]?)( (.*) towards)? (.*))", Pattern.CASE_INSENSITIVE);
+	private static final String KEEP_LETTER_AND_TOWARDS_REPLACEMENT = "$4 $7";
+
+	private static final Pattern ENDS_EXTRA_FARE_REQUIRED = Pattern.compile("(( -)? extra fare required .*$)", Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern SHORT_TURN_ = CleanUtils.cleanWords("short turn");
 
 	private static final Pattern STATION_ = Pattern.compile("(^|\\s)(station)($|\\s)", Pattern.CASE_INSENSITIVE);
 
@@ -178,7 +183,9 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
-		tripHeadsign = STARTS_WITH_TOWARDS_.matcher(tripHeadsign).replaceAll(EMPTY); // keep trip direction name
+		tripHeadsign = KEEP_LETTER_AND_TOWARDS_.matcher(tripHeadsign).replaceAll(KEEP_LETTER_AND_TOWARDS_REPLACEMENT);
+		tripHeadsign = ENDS_EXTRA_FARE_REQUIRED.matcher(tripHeadsign).replaceAll(EMPTY);
+		tripHeadsign = SHORT_TURN_.matcher(tripHeadsign).replaceAll(EMPTY);
 		tripHeadsign = CleanUtils.removeVia(tripHeadsign);
 		tripHeadsign = MC_CAUL_.matcher(tripHeadsign).replaceAll(MC_CAUL_REPLACEMENT); // fix McCAUL
 		tripHeadsign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, tripHeadsign);
