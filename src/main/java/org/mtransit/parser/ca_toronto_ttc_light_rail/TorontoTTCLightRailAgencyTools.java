@@ -2,21 +2,15 @@ package org.mtransit.parser.ca_toronto_ttc_light_rail;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.mtransit.parser.CleanUtils;
+import org.mtransit.commons.CleanUtils;
+import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
-import org.mtransit.parser.MTLog;
-import org.mtransit.parser.StringUtils;
-import org.mtransit.parser.Utils;
-import org.mtransit.parser.gtfs.data.GCalendar;
-import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
-import org.mtransit.parser.gtfs.data.GSpec;
-import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
-import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -27,55 +21,19 @@ import static org.mtransit.parser.Constants.EMPTY;
 // http://opendata.toronto.ca/toronto.transit.commission/ttc-routes-and-schedules/OpenData_TTC_Schedules.zip
 public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
-	public static void main(@Nullable String[] args) {
-		if (args == null || args.length == 0) {
-			args = new String[3];
-			args[0] = "input/gtfs.zip";
-			args[1] = "../../mtransitapps/ca-toronto-ttc-light-rail-android/res/raw/";
-			args[2] = ""; // files-prefix
-		}
+	public static void main(@NotNull String[] args) {
 		new TorontoTTCLightRailAgencyTools().start(args);
 	}
 
-	@Nullable
-	private HashSet<Integer> serviceIdInts;
-
 	@Override
-	public void start(@NotNull String[] args) {
-		MTLog.log("Generating TTC light rail data...");
-		long start = System.currentTimeMillis();
-		this.serviceIdInts = extractUsefulServiceIdInts(args, this, true);
-		super.start(args);
-		MTLog.log("Generating TTC light rail data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+	public boolean defaultExcludeEnabled() {
+		return true;
 	}
 
+	@NotNull
 	@Override
-	public boolean excludingAll() {
-		return this.serviceIdInts != null && this.serviceIdInts.isEmpty();
-	}
-
-	@Override
-	public boolean excludeCalendar(@NotNull GCalendar gCalendar) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessCalendarInt(gCalendar, this.serviceIdInts);
-		}
-		return super.excludeCalendar(gCalendar);
-	}
-
-	@Override
-	public boolean excludeCalendarDate(@NotNull GCalendarDate gCalendarDates) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessCalendarDateInt(gCalendarDates, this.serviceIdInts);
-		}
-		return super.excludeCalendarDate(gCalendarDates);
-	}
-
-	@Override
-	public boolean excludeTrip(@NotNull GTrip gTrip) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessTripInt(gTrip, this.serviceIdInts);
-		}
-		return super.excludeTrip(gTrip);
+	public String getAgencyName() {
+		return "TTC";
 	}
 
 	@NotNull
@@ -91,14 +49,8 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	@NotNull
 	@Override
-	public String getRouteLongName(@NotNull GRoute gRoute) {
-		return cleanRouteLongName(gRoute);
-	}
-
-	@NotNull
-	private String cleanRouteLongName(@NotNull GRoute gRoute) {
-		String routeLongName = gRoute.getRouteLongNameOrDefault();
-		routeLongName = routeLongName.toLowerCase(Locale.ENGLISH);
+	public String cleanRouteLongName(@NotNull String routeLongName) {
+		routeLongName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, routeLongName);
 		return CleanUtils.cleanLabel(routeLongName);
 	}
 
@@ -115,24 +67,19 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	@Nullable
 	@Override
 	public String getRouteColor(@NotNull GRoute gRoute) {
-		int rsn = Integer.parseInt(gRoute.getRouteShortName());
+		final int rsn = Integer.parseInt(gRoute.getRouteShortName());
 		if (rsn >= 300 && rsn <= 399) { // Night Network
 			return COLOR_00529F;
 		}
 		return null; // use agency color instead of provided colors (like web site)
 	}
 
+	@NotNull
 	@Override
-	public void setTripHeadsign(@NotNull MRoute mRoute, @NotNull MTrip mTrip, @NotNull GTrip gTrip, @NotNull GSpec gtfs) {
-		mTrip.setHeadsignString(
-				cleanTripHeadsign(gTrip.getTripHeadsignOrDefault()),
-				gTrip.getDirectionIdOrDefault()
+	public List<Integer> getDirectionTypes() {
+		return Collections.singletonList(
+				MTrip.HEADSIGN_TYPE_DIRECTION
 		);
-	}
-
-	@Override
-	public int getDirectionType() {
-		return MTrip.HEADSIGN_TYPE_DIRECTION;
 	}
 
 	@Override
@@ -146,19 +93,34 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	@Override
 	public String selectDirectionHeadSign(@Nullable String headSign1, @Nullable String headSign2) {
 		if (StringUtils.equals(headSign1, headSign2)) {
-			return null; // can NOT select
+			return null; // canNOT select
 		}
-		if (headSign1 != null && headSign1.startsWith(L_)) {
-			if (headSign2 == null || !headSign2.startsWith(L_)) {
+		final boolean startsWith1 = headSign1 != null && headSign1.startsWith(L_);
+		final boolean startsWith2 = headSign2 != null && headSign2.startsWith(L_);
+		if (startsWith1) {
+			if (!startsWith2) {
 				return headSign2;
 			}
-		} else if (headSign2 != null && headSign2.startsWith(L_)) {
-			return headSign1;
+		} else {
+			if (startsWith2) {
+				return headSign1;
+			}
+		}
+		final boolean match1 = headSign1 != null && DIRECTION_ONLY.matcher(headSign1).find();
+		final boolean match2 = headSign2 != null && DIRECTION_ONLY.matcher(headSign2).find();
+		if (match1) {
+			if (!match2) {
+				return headSign1;
+			}
+		} else if (match2) {
+			return headSign2;
 		}
 		return null;
 	}
 
-	private static final Pattern STARTS_WITH_DASH_ = Pattern.compile("( - .*$)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern DIRECTION_ONLY = Pattern.compile("(^(east|west|north|south)$)", Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern STARTS_WITH_DASH_ = Pattern.compile("((?<=[A-Z]{4,5}) - .*$)", Pattern.CASE_INSENSITIVE);
 
 	@NotNull
 	@Override
@@ -168,26 +130,25 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabel(directionHeadSign);
 	}
 
-	private static final Pattern KEEP_LETTER_AND_TOWARDS_ = Pattern.compile("(^([a-z]+) - ([\\d]+)([a-z]?)( (.*) towards)? (.*))", Pattern.CASE_INSENSITIVE);
-	private static final String KEEP_LETTER_AND_TOWARDS_REPLACEMENT = "$4 $7";
+	private static final Pattern KEEP_LETTER_AND_TOWARDS_ = Pattern.compile("(^(([a-z]+) - )?([\\d]+(/[\\d]+)?)([a-z]?)( (.*) towards)? (.*))", Pattern.CASE_INSENSITIVE);
+	private static final String KEEP_LETTER_AND_TOWARDS_REPLACEMENT = "$6 $9";
 
 	private static final Pattern ENDS_EXTRA_FARE_REQUIRED = Pattern.compile("(( -)? extra fare required .*$)", Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern REPLACEMENT_BUS_ = CleanUtils.cleanWords("replacement bus");
 
 	private static final Pattern SHORT_TURN_ = CleanUtils.cleanWords("short turn");
 
 	private static final Pattern STATION_ = Pattern.compile("(^|\\s)(station)($|\\s)", Pattern.CASE_INSENSITIVE);
-
-	private static final Pattern MC_CAUL_ = CleanUtils.cleanWords("mccaul");
-	private static final String MC_CAUL_REPLACEMENT = CleanUtils.cleanWordsReplacement("McCaul");
 
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
 		tripHeadsign = KEEP_LETTER_AND_TOWARDS_.matcher(tripHeadsign).replaceAll(KEEP_LETTER_AND_TOWARDS_REPLACEMENT);
 		tripHeadsign = ENDS_EXTRA_FARE_REQUIRED.matcher(tripHeadsign).replaceAll(EMPTY);
+		tripHeadsign = REPLACEMENT_BUS_.matcher(tripHeadsign).replaceAll(EMPTY);
 		tripHeadsign = SHORT_TURN_.matcher(tripHeadsign).replaceAll(EMPTY);
 		tripHeadsign = CleanUtils.removeVia(tripHeadsign);
-		tripHeadsign = MC_CAUL_.matcher(tripHeadsign).replaceAll(MC_CAUL_REPLACEMENT); // fix McCAUL
 		tripHeadsign = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, tripHeadsign);
 		tripHeadsign = STATION_.matcher(tripHeadsign).replaceAll(EMPTY);
 		tripHeadsign = CleanUtils.fixMcXCase(tripHeadsign);
@@ -198,25 +159,8 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabel(tripHeadsign);
 	}
 
-	@Override
-	public boolean mergeHeadsign(@NotNull MTrip mTrip, @NotNull MTrip mTripToMerge) {
-		throw new MTLog.Fatal("Unexpected trips to merge %s & %s!", mTrip, mTripToMerge);
-	}
-
 	private static final Pattern SIDE = Pattern.compile("((^|\\W)(side)(\\W|$))", Pattern.CASE_INSENSITIVE);
 	private static final String SIDE_REPLACEMENT = "$2" + "$4";
-
-	private static final Pattern EAST_ = Pattern.compile("((^|\\W)(east)(\\W|$))", Pattern.CASE_INSENSITIVE);
-	private static final String EAST_REPLACEMENT = "$2" + "E" + "$4";
-
-	private static final Pattern WEST_ = Pattern.compile("((^|\\W)(west)(\\W|$))", Pattern.CASE_INSENSITIVE);
-	private static final String WEST_REPLACEMENT = "$2" + "W" + "$4";
-
-	private static final Pattern NORTH_ = Pattern.compile("((^|\\W)(north)(\\W|$))", Pattern.CASE_INSENSITIVE);
-	private static final String NORTH_REPLACEMENT = "$2" + "N" + "$4";
-
-	private static final Pattern SOUTH_ = Pattern.compile("((^|\\W)(south)(\\W|$))", Pattern.CASE_INSENSITIVE);
-	private static final String SOUTH_REPLACEMENT = "$2" + "S" + "$4";
 
 	private static final Pattern ENDS_WITH_TOWARDS_ = Pattern.compile("( towards .*$)", Pattern.CASE_INSENSITIVE);
 
@@ -227,12 +171,8 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		gStopName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, gStopName);
 		gStopName = CleanUtils.CLEAN_AT.matcher(gStopName).replaceAll(CleanUtils.CLEAN_AT_REPLACEMENT);
 		gStopName = SIDE.matcher(gStopName).replaceAll(SIDE_REPLACEMENT);
-		gStopName = EAST_.matcher(gStopName).replaceAll(EAST_REPLACEMENT);
-		gStopName = WEST_.matcher(gStopName).replaceAll(WEST_REPLACEMENT);
-		gStopName = NORTH_.matcher(gStopName).replaceAll(NORTH_REPLACEMENT);
-		gStopName = SOUTH_.matcher(gStopName).replaceAll(SOUTH_REPLACEMENT);
+		gStopName = CleanUtils.cleanBounds(gStopName);
 		gStopName = CleanUtils.fixMcXCase(gStopName);
-		gStopName = CleanUtils.removePoints(gStopName);
 		gStopName = CleanUtils.cleanStreetTypes(gStopName);
 		gStopName = CleanUtils.cleanNumbers(gStopName);
 		return CleanUtils.cleanLabel(gStopName);
