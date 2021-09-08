@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.StringUtils;
+import org.mtransit.commons.TorontoTTCCommons;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.mt.data.MAgency;
@@ -54,24 +55,19 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabel(routeLongName);
 	}
 
-	private static final String AGENCY_COLOR = "B80000"; // RED (AGENCY WEB SITE CSS)
-
-	@NotNull
 	@Override
-	public String getAgencyColor() {
-		return AGENCY_COLOR;
+	public boolean defaultAgencyColorEnabled() {
+		return true;
 	}
-
-	private static final String COLOR_00529F = "00529F"; // BLUE (NIGHT BUSES)
 
 	@Nullable
 	@Override
-	public String getRouteColor(@NotNull GRoute gRoute) {
-		final int rsn = Integer.parseInt(gRoute.getRouteShortName());
-		if (rsn >= 300 && rsn <= 399) { // Night Network
-			return COLOR_00529F;
+	public String fixColor(@Nullable String color) {
+		final String fixedColor = TorontoTTCCommons.fixColor(color);
+		if (fixedColor != null) {
+			return fixedColor;
 		}
-		return null; // use agency color instead of provided colors (like web site)
+		return super.fixColor(color);
 	}
 
 	@NotNull
@@ -88,6 +84,8 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	}
 
 	private static final String L_ = "L ";
+
+	private static final Pattern DIRECTION_ONLY = Pattern.compile("(^(east|west|north|south)$)", Pattern.CASE_INSENSITIVE);
 
 	@Nullable
 	@Override
@@ -118,8 +116,6 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return null;
 	}
 
-	private static final Pattern DIRECTION_ONLY = Pattern.compile("(^(east|west|north|south)$)", Pattern.CASE_INSENSITIVE);
-
 	private static final Pattern STARTS_WITH_DASH_ = Pattern.compile("((?<=[A-Z]{4,5}) - .*$)", Pattern.CASE_INSENSITIVE);
 
 	@NotNull
@@ -139,7 +135,7 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	private static final Pattern SHORT_TURN_ = CleanUtils.cleanWords("short turn");
 
-	private static final Pattern STATION_ = Pattern.compile("(^|\\s)(station)($|\\s)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern STATION_ = CleanUtils.cleanWord("station");
 
 	@NotNull
 	@Override
