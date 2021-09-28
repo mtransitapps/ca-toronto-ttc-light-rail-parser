@@ -6,7 +6,6 @@ import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.StringUtils;
 import org.mtransit.commons.TorontoTTCCommons;
 import org.mtransit.parser.DefaultAgencyTools;
-import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MTrip;
 
@@ -24,6 +23,12 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
 		new TorontoTTCLightRailAgencyTools().start(args);
+	}
+
+	@Nullable
+	@Override
+	public List<Locale> getSupportedLanguages() {
+		return LANG_EN;
 	}
 
 	@Override
@@ -44,14 +49,24 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
-	public long getRouteId(@NotNull GRoute gRoute) {
-		return Long.parseLong(gRoute.getRouteShortName()); // using route short name as route ID
+	public boolean defaultRouteIdEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean useRouteShortNameForRouteId() {
+		return true;
+	}
+
+	@Override
+	public boolean defaultRouteLongNameEnabled() {
+		return true;
 	}
 
 	@NotNull
 	@Override
 	public String cleanRouteLongName(@NotNull String routeLongName) {
-		routeLongName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, routeLongName);
+		routeLongName = CleanUtils.toLowerCaseUpperCaseWords(getFirstLanguageNN(), routeLongName);
 		return CleanUtils.cleanLabel(routeLongName);
 	}
 
