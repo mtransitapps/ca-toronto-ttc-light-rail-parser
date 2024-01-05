@@ -18,7 +18,6 @@ import static org.mtransit.parser.Constants.EMPTY;
 
 // https://open.toronto.ca/dataset/ttc-routes-and-schedules/
 // OLD: http://opendata.toronto.ca/TTC/routes/OpenData_TTC_Schedules.zip
-// http://opendata.toronto.ca/toronto.transit.commission/ttc-routes-and-schedules/OpenData_TTC_Schedules.zip
 public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
