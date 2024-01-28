@@ -6,6 +6,7 @@ import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.StringUtils;
 import org.mtransit.commons.TorontoTTCCommons;
 import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.gtfs.data.GRouteType;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MTrip;
 
@@ -41,10 +42,15 @@ public class TorontoTTCLightRailAgencyTools extends DefaultAgencyTools {
 		return "TTC";
 	}
 
+	@Override
+	public @NotNull Integer getAgencyRouteType() {
+		return MAgency.ROUTE_TYPE_LIGHT_RAIL;
+	}
+
 	@NotNull
 	@Override
-	public Integer getAgencyRouteType() {
-		return MAgency.ROUTE_TYPE_LIGHT_RAIL;
+	public Integer getAgencyExtendedRouteType() {
+		return GRouteType.EX_TRAM_SERVICE.getId();
 	}
 
 	@Override
